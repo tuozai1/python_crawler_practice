@@ -4,6 +4,7 @@ import time
 import requests
 from comp import *
 from bs4 import BeautifulSoup
+import mysql.connector
 
 headers = {                 # 伪装为浏览器发送请求
      "User-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69"
@@ -87,8 +88,55 @@ class Douban:
         wb.save('豆瓣top250.xlsx')
         print("Data saved successfully.")
 
+    def init_db(self):                  # 创建数据库和表
+        print("Initializing database...")
+        connection = mysql.connector.connect(host='localhost',
+                                             port=3306,
+                                             user='root',
+                                             password='040309cy')
+
+        cursor = connection.cursor()
+
+        cursor.execute("CREATE DATABASE IF NOT EXISTS douban;")
+
+        cursor.execute('USE douban')
+
+        cursor.execute('''CREATE TABLE IF NOT EXISTS douban_inf(
+            `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+            `info_link` TEXT,
+            `pic_link` TEXT,
+            `mname` TEXT,
+            `rating` TEXT,
+            `score` TEXT,
+            `inq` TEXT,
+            `info` TEXT);''')
+        cursor.close()
+        connection.close()
+        print("Database initialized successfully.")
+
+    def save_database(self):            # 存入电影信息，别乱运行，不然又加入数据
+        print("Saving data to database...")
+        connection = mysql.connector.connect(host='localhost',
+                                             port=3306,
+                                             user='root',
+                                             password='040309cy',
+                                             database='douban')
+
+        cursor = connection.cursor()
+
+        for i in range(0, 250):
+            date = self.datelist[i]
+            cursor.execute("INSERT INTO douban_inf VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (i + 1, date[0], date[1], date[2], date[3], date[4], date[5], date[6]))
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+        print("Data saved successfully.")
+
 if __name__ == "__main__":
     time.sleep(1)
-    execute = Douban()
-    execute.get_information()
-    execute.save_data()
+    execu = Douban()
+    execu.get_information()
+    execu.save_data()
+    execu.init_db()
+    execu.save_database()
