@@ -119,7 +119,7 @@ class Douban:
         connection = mysql.connector.connect(host='localhost',
                                              port=3306,
                                              user='root',
-                                             password='040309cy',
+                                             password='123456',
                                              database='douban')
 
         cursor = connection.cursor()
